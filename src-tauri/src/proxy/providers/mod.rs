@@ -23,6 +23,7 @@ pub mod copilot_model_map;
 mod gemini;
 pub(crate) mod gemini_schema;
 pub mod gemini_shadow;
+mod grok;
 pub mod models;
 pub mod streaming;
 pub mod streaming_codex_chat;
@@ -51,6 +52,7 @@ pub use codex::{
     should_convert_codex_responses_to_chat,
 };
 pub use gemini::GeminiAdapter;
+pub use grok::GrokAdapter;
 
 /// 供应商类型枚举
 ///
@@ -168,6 +170,7 @@ impl ProviderType {
                 ProviderType::Claude
             }
             AppType::Codex => ProviderType::Codex,
+            AppType::Grok => ProviderType::Codex,
             AppType::Gemini => {
                 // 检测是否为 CLI 模式（OAuth）
                 let adapter = GeminiAdapter::new();
@@ -237,6 +240,7 @@ pub fn get_adapter(app_type: &AppType) -> Box<dyn ProviderAdapter> {
     match app_type {
         AppType::Claude | AppType::ClaudeDesktop => Box::new(ClaudeAdapter::new()),
         AppType::Codex => Box::new(CodexAdapter::new()),
+        AppType::Grok => Box::new(GrokAdapter::new()),
         AppType::Gemini => Box::new(GeminiAdapter::new()),
         AppType::OpenCode | AppType::OpenClaw | AppType::Hermes => {
             // These apps don't support proxy, fallback to Codex adapter

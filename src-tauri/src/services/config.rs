@@ -136,6 +136,9 @@ impl ConfigService {
             AppType::Hermes => {
                 // Hermes uses additive mode, no live sync needed
             }
+            AppType::Grok => {
+                // Grok is handled by provider live snapshot writes.
+            }
         }
 
         Ok(())

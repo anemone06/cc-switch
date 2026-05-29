@@ -254,7 +254,7 @@ impl StreamCheckService {
                 )
                 .await
             }
-            AppType::Codex => {
+            AppType::Codex | AppType::Grok => {
                 Self::check_codex_stream(
                     &client,
                     &base_url,
@@ -1400,6 +1400,13 @@ impl StreamCheckService {
             AppType::Codex => {
                 Self::extract_codex_model(provider).unwrap_or_else(|| config.codex_model.clone())
             }
+            AppType::Grok => provider
+                .settings_config
+                .get("config")
+                .and_then(|v| v.as_str())
+                .and_then(crate::grok_config::extract_grok_default_model)
+                .map(|model| model.model)
+                .unwrap_or_else(|| config.codex_model.clone()),
             AppType::Gemini => Self::extract_env_model(provider, "GEMINI_MODEL")
                 .unwrap_or_else(|| config.gemini_model.clone()),
             AppType::OpenCode => {

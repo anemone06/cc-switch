@@ -62,6 +62,22 @@ export const OPENCLAW_DEFAULT_CONFIG = JSON.stringify(
   2,
 );
 
+export const GROK_DEFAULT_CONFIG = JSON.stringify(
+  {
+    config: `[models]
+default = "gpt-4o"
+
+[model.gpt-4o]
+model = "gpt-4o"
+base_url = "https://api.example.com/v1"
+api_key = ""
+api_backend = "chat_completions"
+`,
+  },
+  null,
+  2,
+);
+
 // ── Pure functions ───────────────────────────────────────────────────
 
 export function isKnownOpencodeOptionKey(key: string): boolean {

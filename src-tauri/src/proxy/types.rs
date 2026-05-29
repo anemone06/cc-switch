@@ -115,6 +115,7 @@ pub struct ProxyTakeoverStatus {
     pub gemini: bool,
     pub opencode: bool,
     pub openclaw: bool,
+    pub grok: bool,
 }
 
 /// API 格式类型（预留，当前不需要格式转换）
@@ -142,7 +143,7 @@ pub struct ProviderHealth {
 /// Live 配置备份记录
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct LiveBackup {
-    /// 应用类型 (claude/codex/gemini)
+    /// 应用类型
     pub app_type: String,
     /// 原始配置 JSON
     pub original_config: String,
@@ -150,7 +151,7 @@ pub struct LiveBackup {
     pub backed_up_at: String,
 }
 
-/// 全局代理配置（统一字段，三行镜像）
+/// 全局代理配置（统一字段，各应用行镜像）
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct GlobalProxyConfig {
@@ -168,7 +169,7 @@ pub struct GlobalProxyConfig {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AppProxyConfig {
-    /// 应用类型 (claude/codex/gemini)
+    /// 应用类型
     pub app_type: String,
     /// 该 app 代理启用开关
     pub enabled: bool,

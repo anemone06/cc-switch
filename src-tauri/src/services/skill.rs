@@ -536,6 +536,7 @@ impl SkillService {
                     return Ok(custom.join("skills"));
                 }
             }
+            AppType::Grok => {}
         }
 
         // 默认路径：回退到用户主目录下的标准位置
@@ -553,6 +554,7 @@ impl SkillService {
             AppType::OpenCode => home.join(".config").join("opencode").join("skills"),
             AppType::OpenClaw => home.join(".openclaw").join("skills"),
             AppType::Hermes => crate::hermes_config::get_hermes_dir().join("skills"),
+            AppType::Grok => crate::grok_config::get_grok_config_dir().join("skills"),
         })
     }
 

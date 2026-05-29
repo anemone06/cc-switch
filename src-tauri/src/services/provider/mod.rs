@@ -1933,6 +1933,7 @@ impl ProviderService {
             AppType::OpenCode => Self::extract_opencode_common_config(&provider.settings_config),
             AppType::OpenClaw => Self::extract_openclaw_common_config(&provider.settings_config),
             AppType::Hermes => Ok(String::new()), // Hermes doesn't use common config snippets
+            AppType::Grok => Ok(String::new()),
         }
     }
 
@@ -1949,6 +1950,7 @@ impl ProviderService {
             AppType::OpenCode => Self::extract_opencode_common_config(settings_config),
             AppType::OpenClaw => Self::extract_openclaw_common_config(settings_config),
             AppType::Hermes => Ok(String::new()), // Hermes doesn't use common config snippets
+            AppType::Grok => Ok(String::new()),
         }
     }
 
@@ -2305,6 +2307,28 @@ impl ProviderService {
                 use crate::gemini_config::validate_gemini_settings;
                 validate_gemini_settings(&provider.settings_config)?
             }
+            AppType::Grok => {
+                let settings = provider.settings_config.as_object().ok_or_else(|| {
+                    AppError::localized(
+                        "provider.grok.settings.not_object",
+                        "Grok 配置必须是 JSON 对象",
+                        "Grok configuration must be a JSON object",
+                    )
+                })?;
+
+                if let Some(config_value) = settings.get("config") {
+                    if !(config_value.is_string() || config_value.is_null()) {
+                        return Err(AppError::localized(
+                            "provider.grok.config.invalid_type",
+                            "Grok config 字段必须是字符串",
+                            "Grok config field must be a string",
+                        ));
+                    }
+                    if let Some(cfg_text) = config_value.as_str() {
+                        crate::grok_config::validate_grok_config_toml(cfg_text)?;
+                    }
+                }
+            }
             AppType::OpenCode => {
                 // OpenCode uses a different config structure: { npm, options, models }
                 // Basic validation - must be an object
@@ -2483,6 +2507,36 @@ impl ProviderService {
                     .cloned()
                     .unwrap_or_else(|| "https://generativelanguage.googleapis.com".to_string());
 
+                Ok((api_key, base_url))
+            }
+            AppType::Grok => {
+                let config_toml = provider
+                    .settings_config
+                    .get("config")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("");
+                let model_config = crate::grok_config::extract_grok_default_model(config_toml)
+                    .ok_or_else(|| {
+                        AppError::localized(
+                            "provider.grok.model.missing",
+                            "Grok config.toml 缺少默认模型配置",
+                            "Grok config.toml is missing default model configuration",
+                        )
+                    })?;
+                let api_key = model_config.api_key.ok_or_else(|| {
+                    AppError::localized(
+                        "provider.grok.api_key.missing",
+                        "缺少 API Key",
+                        "API key is missing",
+                    )
+                })?;
+                let base_url = model_config.base_url.ok_or_else(|| {
+                    AppError::localized(
+                        "provider.grok.base_url.missing",
+                        "Grok config.toml 缺少 base_url 配置",
+                        "Grok config.toml is missing base_url",
+                    )
+                })?;
                 Ok((api_key, base_url))
             }
             AppType::OpenCode => {

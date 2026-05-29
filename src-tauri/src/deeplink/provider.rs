@@ -144,6 +144,7 @@ pub(crate) fn build_provider_from_request(
     let settings_config = match app_type {
         AppType::Claude | AppType::ClaudeDesktop => build_claude_settings(request),
         AppType::Codex => build_codex_settings(request),
+        AppType::Grok => build_grok_settings(request),
         AppType::Gemini => build_gemini_settings(request),
         AppType::OpenCode => build_opencode_settings(request),
         AppType::OpenClaw => build_additive_app_settings(request),
@@ -338,6 +339,44 @@ requires_openai_auth = true
         },
         "config": config_toml
     })
+}
+
+fn build_grok_settings(request: &DeepLinkImportRequest) -> serde_json::Value {
+    let model_name = request
+        .model
+        .as_deref()
+        .unwrap_or("gpt-4o")
+        .trim()
+        .to_string();
+    let model_name = if model_name.is_empty() {
+        "gpt-4o".to_string()
+    } else {
+        model_name
+    };
+    let endpoint = get_primary_endpoint(request)
+        .trim()
+        .trim_end_matches('/')
+        .to_string();
+
+    let model_id = toml_edit::Value::from(model_name.as_str()).to_string();
+    let model_value = toml_edit::Value::from(model_name.as_str()).to_string();
+    let endpoint = toml_edit::Value::from(endpoint.as_str()).to_string();
+    let api_key =
+        toml_edit::Value::from(request.api_key.as_deref().unwrap_or_default()).to_string();
+
+    let config_toml = format!(
+        r#"[models]
+default = {model_id}
+
+[model.{model_id}]
+model = {model_value}
+base_url = {endpoint}
+api_key = {api_key}
+api_backend = "chat_completions"
+"#
+    );
+
+    json!({ "config": config_toml })
 }
 
 /// Build Gemini settings configuration

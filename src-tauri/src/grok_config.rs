@@ -14,6 +14,7 @@ pub struct GrokModelConfig {
     pub model: String,
     pub base_url: Option<String>,
     pub api_key: Option<String>,
+    pub env_key: Option<String>,
     pub api_backend: Option<String>,
     pub auth_scheme: Option<String>,
 }
@@ -102,6 +103,12 @@ pub fn extract_grok_default_model(config_text: &str) -> Option<GrokModelConfig> 
             .map(str::to_string),
         api_key: table
             .get("api_key")
+            .and_then(TomlValue::as_str)
+            .map(str::trim)
+            .filter(|value| !value.is_empty())
+            .map(str::to_string),
+        env_key: table
+            .get("env_key")
             .and_then(TomlValue::as_str)
             .map(str::trim)
             .filter(|value| !value.is_empty())
@@ -225,6 +232,7 @@ default = "DeepSeek/deepseek-v4-pro"
 model = "DeepSeek/deepseek-v4-pro"
 base_url = "https://api.example.com/v1"
 api_key = "sk-test"
+env_key = "GROK_API_KEY"
 api_backend = "chat_completions"
 "#;
 
@@ -235,6 +243,7 @@ api_backend = "chat_completions"
             Some("https://api.example.com/v1")
         );
         assert_eq!(model.api_key.as_deref(), Some("sk-test"));
+        assert_eq!(model.env_key.as_deref(), Some("GROK_API_KEY"));
     }
 
     #[test]

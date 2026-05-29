@@ -60,7 +60,13 @@ impl ProviderAdapter for GrokAdapter {
         }
 
         let model_config = Self::extract_model_config(provider)?;
-        let api_key = model_config.api_key?;
+        let api_key = model_config.api_key.or_else(|| {
+            model_config
+                .env_key
+                .and_then(|key| std::env::var(key).ok())
+                .map(|value| value.trim().to_string())
+                .filter(|value| !value.is_empty())
+        })?;
         let strategy = match model_config.auth_scheme.as_deref() {
             Some("x_api_key") | Some("x-api-key") => AuthStrategy::Anthropic,
             _ => AuthStrategy::Bearer,

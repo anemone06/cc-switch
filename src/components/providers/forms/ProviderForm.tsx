@@ -48,6 +48,7 @@ import {
 import { OpenCodeFormFields } from "./OpenCodeFormFields";
 import { OpenClawFormFields } from "./OpenClawFormFields";
 import { HermesFormFields } from "./HermesFormFields";
+import { GrokFormFields } from "./GrokFormFields";
 import type { UniversalProviderPreset } from "@/config/universalProviderPresets";
 import {
   applyTemplateValues,
@@ -2247,7 +2248,17 @@ function ProviderFormFull({
               </div>
               {settingsConfigErrorField}
             </>
-          ) : appId === "openclaw" || appId === "hermes" || appId === "grok" ? (
+          ) : appId === "grok" ? (
+            <>
+              <GrokFormFields
+                settingsConfig={form.watch("settingsConfig")}
+                onSettingsConfigChange={(config) =>
+                  form.setValue("settingsConfig", config)
+                }
+              />
+              {settingsConfigErrorField}
+            </>
+          ) : appId === "openclaw" || appId === "hermes" ? (
             <>
               <div className="space-y-2">
                 <Label htmlFor="settingsConfig">
@@ -2263,11 +2274,7 @@ function ProviderFormFull({
   "base_url": "https://api.example.com/v1",
   "api_key": ""
 }`
-                      : appId === "grok"
-                        ? `{
-  "config": "[models]\\ndefault = \\"gpt-4o\\"\\n\\n[model.gpt-4o]\\nmodel = \\"gpt-4o\\"\\nbase_url = \\"https://api.example.com/v1\\"\\napi_key = \\"\\"\\napi_backend = \\"chat_completions\\"\\n"
-}`
-                        : `{
+                      : `{
   "baseUrl": "https://api.example.com/v1",
   "apiKey": "your-api-key-here",
   "api": "openai-completions",
